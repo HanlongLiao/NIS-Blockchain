@@ -19,7 +19,7 @@ class Blockchain(object):
 
         # Create the genesis block
         self.new_block(previous_hash=1, proof=100)
-        self.node = set()
+        self.nodes = set()
 
     def register_node(self, address):
         """
@@ -29,7 +29,7 @@ class Blockchain(object):
         """
 
         parsed_url = urlparse(address)
-        self.node.add(parsed_url.netloc)
+        self.nodes.add(parsed_url.netloc)
 
     def new_block(self, proof, previous_hash=None):
         """
@@ -157,7 +157,7 @@ class Blockchain(object):
 
         # Grab and verify the chains from all the nodes in our network
         for node in neighbours:
-            response = response.get(f'http://{node}/chain')
+            response = requests.get(f'http://{node}/chain')
 
             if response.status_code == 200:
                 length = response.json()['length']
@@ -243,9 +243,12 @@ def full_chain():
 
 @app.route('/nodes/register', methods=['POST'])
 def register_nodes():
-    values_j = request.get_json()
-    values = json.loads(str(values_j))
-
+    # values_j = r'request.get_json()'
+    # values = json.loads(values_j)
+    #
+    values = request.get_json()
+    print(type(values))
+    # dict(values)
     nodes = values.get('nodes')
     if nodes is None:
         return "Error: Please supply a valid list of nodes", 400
@@ -261,7 +264,7 @@ def register_nodes():
     return jsonify(response), 201
 
 
-@app.route('/nodes/resolve', methods=[''])
+@app.route('/nodes/resolve', methods=['GET'])
 def consensus():
     replaced = blockchain.resolve_conflicts()
 
@@ -280,4 +283,4 @@ def consensus():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='10.51.168.234', port=5001)
